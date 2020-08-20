@@ -1,26 +1,5 @@
 #include "ui.h"
 
-void print_matches(MEMBLOCK *mb_list, VALUE_TYPE valueType) {
-    unsigned int offset;
-    MEMBLOCK *mb = mb_list;
-    double val = 0;
-    printf("\n=== Matches ===\n");
-    while(mb) {
-        for(offset = 0; offset < mb->size; offset++) {
-            if(IS_IN_SEARCH(mb, offset)) {
-                val = read(mb->hProc, valueType, (LPCVOID)(mb->addr + offset));
-                if(valueType == _FLOAT || valueType == _DOUBLE)
-                    printf("0x%08x (%f)\n", mb->addr + offset, val);
-                else if(valueType == _STRING) 
-                    printf("0x%08x (%s)\n", mb->addr + offset, val);
-                else
-                    printf("0x%08x (%d)\n", mb->addr + offset, val);
-            }
-        }
-        mb = mb->next;
-    }
-}
-
 void showValueTypeMenu(char *userInput, char *searchType, VALUE_TYPE *valueType) {
     printf("== Choice of value type ===\n");
     printf("[a] - one byte (char)\n");

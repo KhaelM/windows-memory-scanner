@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <stdio.h>
+#include "utils.h"
 
 BOOL SetPrivilege(
     HANDLE hToken,          // access token handle
@@ -89,6 +90,7 @@ typedef struct _MEMBLOCK
     struct _MEMBLOCK *next;
 } MEMBLOCK;
 
+void print_matches(MEMBLOCK *mb_list, VALUE_TYPE valueType);
 
 int getDataSize(VALUE_TYPE valueType);
 

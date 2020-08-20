@@ -9,7 +9,7 @@ LeMookyScanner: main.o ui.o utils.o scanner.o
 clean:
 	-rm *.o
 
-scanner.o: scanner.c scanner.h 
+scanner.o: scanner.c scanner.h utils.h
 	$(CC) -c $<
 
 
