@@ -1,1 +1,2 @@
-A mini windows memory scanner and editor. It's a mini cheat engine.
+#Windows Mini Memory Scanner
+This is a tool to read/write a program, inspired by Dark Byte's Cheat Engine.
