@@ -656,7 +656,6 @@ void showSearchValueMenu(char *userInput, char *searchType, VALUE_TYPE *valueTyp
     update_scan(scan, *cond, *val, *valueType);
     *uiMenu = MATCH_MENU;
 
-    free(userInput);
 }
 
 void showMainMenu(MEMBLOCK *scan, DWORD *pid, char *userInput, MENU *uiMenu) {
