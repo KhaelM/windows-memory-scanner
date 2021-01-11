@@ -51,22 +51,20 @@ typedef enum _MENU
 
 typedef enum _VALUE_TYPE
 {
-    _ONE_BYTE,
     _TWO_BYTE,
     _FOUR_BYTE,
     _EIGHT_BYTE,
     _FLOAT,
-    _DOUBLE,
-    _STRING
+    _DOUBLE
 } VALUE_TYPE;
 
 typedef struct _MEMBLOCK 
 {
     HANDLE hProc;
     // base address related to this memblock
-    LPCVOID *addr;
+    unsigned char *addr;
     // size of the block aka how much memory there is beginning of the base address 
-    int size;
+    SIZE_T size;
     // local buffer where we'll store data from rpm
     unsigned char *buffer;
 
@@ -80,7 +78,7 @@ typedef struct _MEMBLOCK
     */
     unsigned char *searchmask;
     // Store how many matches are still in the memblock
-    int matches;
+    SIZE_T matches;
     /**
      * This can be 1, 2 or 4 bytes
      * We use this member to decide whether the 
@@ -94,7 +92,15 @@ void print_matches(MEMBLOCK *mb_list, VALUE_TYPE valueType);
 
 int getDataSize(VALUE_TYPE valueType);
 
-double read(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
+short readShort(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
+
+int readInteger(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
+
+long readLong(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
+
+float readFloat(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
+
+double readDouble(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr);
 
 void write(HANDLE hProc, VALUE_TYPE valueType, LPVOID addr, double val);
 
@@ -119,6 +125,6 @@ void freeScan (MEMBLOCK* mb_list);
 */
 void updateScan(MEMBLOCK* mb_list, SEARCH_CONDITION condition, double val, VALUE_TYPE valueType);
 
-int getMatchesCount(MEMBLOCK *mb_list);
+SIZE_T getMatchesCount(MEMBLOCK *mb_list);
 
 void enterPid(MEMBLOCK **scan, DWORD *pid);

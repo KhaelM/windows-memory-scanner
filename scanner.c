@@ -3,18 +3,21 @@
 void print_matches(MEMBLOCK *mb_list, VALUE_TYPE valueType) {
     unsigned int offset;
     MEMBLOCK *mb = mb_list;
-    double val = 0;
     printf("\n=== Matches ===\n");
     while(mb) {
         for(offset = 0; offset < mb->size; offset++) {
             if(IS_IN_SEARCH(mb, offset)) {
-                val = read(mb->hProc, valueType, (LPCVOID)(mb->addr + offset));
-                if(valueType == _FLOAT || valueType == _DOUBLE)
-                    printf("0x%08x (%f)\n", mb->addr + offset, val);
-                else if(valueType == _STRING) 
-                    printf("0x%08x (%s)\n", mb->addr + offset, val);
-                else
-                    printf("0x%08x (%d)\n", mb->addr + offset, val);
+                if (valueType == _TWO_BYTE) {
+                    printf("0x%p (%d)\n", mb->addr + offset, readShort(mb->hProc, valueType, (LPCVOID)(mb->addr + offset)));
+                } else if (valueType == _FOUR_BYTE) {
+                    printf("0x%p (%d)\n", mb->addr + offset, readInteger(mb->hProc, valueType, (LPCVOID)(mb->addr + offset)));
+                } else if (valueType == _EIGHT_BYTE) {
+                    printf("0x%p (%d)\n", mb->addr + offset, readLong(mb->hProc, valueType, (LPCVOID)(mb->addr + offset)));
+                } else if (valueType == _FLOAT) {
+                    printf("0x%p (%f)\n", mb->addr + offset, readFloat(mb->hProc, valueType, (LPCVOID)(mb->addr + offset)));
+                } else if (valueType == _DOUBLE) {
+                    printf("0x%p (%lf)\n", mb->addr + offset, readDouble(mb->hProc, valueType, (LPCVOID)(mb->addr + offset)));
+                }
             }
         }
         mb = mb->next;
@@ -69,9 +72,6 @@ int getDataSize(VALUE_TYPE valueType) {
     int data_size = 0;
 
     switch(valueType) {
-        case _ONE_BYTE:
-            data_size = 1;
-            break;
         case _TWO_BYTE:
             data_size = 2;
             break;
@@ -92,11 +92,55 @@ int getDataSize(VALUE_TYPE valueType) {
     return data_size;
 }
 
-double read(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
-    double val = 0;
+short readShort(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
+    short val = 0;
     int data_size = getDataSize(valueType);
 
     if(ReadProcessMemory(hProc, addr, &val, data_size, NULL) == 0) {
+        printf("read failed\n");
+    }
+
+    return val;
+}
+
+int readInteger(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
+    int val = 0;
+    int data_size = getDataSize(valueType);
+
+    if (ReadProcessMemory(hProc, addr, &val, data_size, NULL) == 0) {
+        printf("read failed\n");
+    }
+
+    return val;
+}
+
+long readLong(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
+    long val = 0;
+    int data_size = getDataSize(valueType);
+
+    if (ReadProcessMemory(hProc, addr, &val, data_size, NULL) == 0) {
+        printf("read failed\n");
+    }
+
+    return val;
+}
+
+float readFloat(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
+    float val = 0;
+    int data_size = getDataSize(valueType);
+
+    if (ReadProcessMemory(hProc, addr, &val, data_size, NULL) == 0) {
+        printf("read failed\n");
+    }
+
+    return val;
+}
+
+double readDouble(HANDLE hProc, VALUE_TYPE valueType, LPCVOID addr) {
+    double val = 0;
+    int data_size = getDataSize(valueType);
+
+    if (ReadProcessMemory(hProc, addr, &val, data_size, NULL) == 0) {
         printf("read failed\n");
     }
 
@@ -107,10 +151,6 @@ void write(HANDLE hProc, VALUE_TYPE valueType, LPVOID addr, double val) {
     int data_size = getDataSize(valueType);
 
     switch(valueType) {
-        case _ONE_BYTE: ;
-            char charVal = (char) val;
-            if(WriteProcessMemory(hProc, addr, &charVal, data_size, NULL) == 0) printf("Writing failed\n");
-            break;
         case _TWO_BYTE: ;
             short shortVal = (short) val;
             if(WriteProcessMemory(hProc, addr, &shortVal, data_size, NULL) == 0) printf("Writing failed\n");
@@ -126,8 +166,6 @@ void write(HANDLE hProc, VALUE_TYPE valueType, LPVOID addr, double val) {
         case _FLOAT: ;
             float floatVal = (float) val;
             if(WriteProcessMemory(hProc, addr, &floatVal, data_size, NULL) == 0) printf("Writing failed\n");
-            break;
-        case _STRING: ;
             break;
         default:
             if(WriteProcessMemory(hProc, addr, &val, data_size, NULL) == 0) printf("Writing failed\n");
@@ -179,9 +217,9 @@ void freeMemblock (MEMBLOCK *mb) {
 
 void updateMemblock(MEMBLOCK *mb, SEARCH_CONDITION condition, double val, VALUE_TYPE valueType) {
     // We'll read content in block of 128K
-    char tempbuf[128*1024];
-    unsigned int bytes_left;
-    unsigned int total_read;
+    char *tempbuf = malloc(128 * 1024 * sizeof(char));
+    SIZE_T bytes_left;
+    SIZE_T total_read;
     SIZE_T bytes_to_read;
     // Store the number of bytes transferred into the buffer by reading
     SIZE_T bytes_read;
@@ -195,7 +233,7 @@ void updateMemblock(MEMBLOCK *mb, SEARCH_CONDITION condition, double val, VALUE_
         while(bytes_left)
         {
             bytes_to_read = (bytes_left > sizeof(tempbuf)) ? sizeof(tempbuf) : bytes_left;
-            ReadProcessMemory(mb->hProc, (mb->addr + total_read), tempbuf, bytes_to_read, &bytes_read);
+            ReadProcessMemory(mb->hProc, (mb->addr + total_read), tempbuf, bytes_to_read, (SIZE_T*)&bytes_read);
             if(bytes_read != bytes_to_read) break;
 
             if(condition == COND_UNCONDITIONAL) {
@@ -214,10 +252,6 @@ void updateMemblock(MEMBLOCK *mb, SEARCH_CONDITION condition, double val, VALUE_
                         double prev_val = 0;
 
                         switch (valueType) {
-                            case _ONE_BYTE:
-                                temp_val = tempbuf[offset];
-                                prev_val = mb->buffer[total_read+offset];
-                                break;
                             case _TWO_BYTE:
                                 temp_val = *((short*) &tempbuf[offset]);
                                 prev_val = *((short*) &mb->buffer[total_read+offset]);
@@ -367,9 +401,9 @@ void updateScan(MEMBLOCK* mb_list, SEARCH_CONDITION condition, double val, VALUE
     }
 }
 
-int getMatchesCount(MEMBLOCK *mb_list) {
+SIZE_T getMatchesCount(MEMBLOCK *mb_list) {
     MEMBLOCK *mb = mb_list;
-    unsigned int count = 0;
+    SIZE_T count = 0;
 
     while(mb) {
         count += mb->matches;
@@ -382,7 +416,7 @@ int getMatchesCount(MEMBLOCK *mb_list) {
 void enterPid(MEMBLOCK **scan, DWORD *pid) {
     while(1) {
         printf("Enter pid: ");
-        scanf("%d", pid);
+        scanf_s("%d", pid);
         clearStringBuffer();
         printf("pid = %d\n", *pid);
         *scan = createScan(*pid);

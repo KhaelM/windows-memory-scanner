@@ -2,45 +2,40 @@
 
 void showValueTypeMenu(char *userInput, char *searchType, VALUE_TYPE *valueType) {
     printf("== Choice of value type ===\n");
-    printf("[a] - one byte (char)\n");
     printf("[b] - two byte (short)\n");
     printf("[c] - four byte (int)\n");
     printf("[d] - float\n");
     printf("[e] - double\n");
-    printf("[f] - string\n");
+    printf("[f] - eight byte (long)\n");
     printf("Your choice: ");
     readString(userInput, MAX_CHAR_SIZE);
 
     switch(userInput[0]) {
-        case 'a':
-            *valueType = _ONE_BYTE;
-            strcpy(searchType, "one byte");
-            break;
         case 'b':
             *valueType = _TWO_BYTE;
-            strcpy(searchType, "two byte");
+            strcpy_s(searchType, MAX_CHAR,"two byte");
             break;
         case 'c':
             *valueType = _FOUR_BYTE;
-            strcpy(searchType, "four byte");
+            strcpy_s(searchType, MAX_CHAR, "four byte");
             break;
         case 'd':
             *valueType = _FLOAT;
-            strcpy(searchType, "float");
+            strcpy_s(searchType, MAX_CHAR, "float");
             break;
         case 'e':
             *valueType = _DOUBLE;
-            strcpy(searchType, "double");
+            strcpy_s(searchType, MAX_CHAR, "double");
             break;
-        default:
-            *valueType = _STRING;
-            strcpy(searchType, "string");
+        case 'f':
+            *valueType = _EIGHT_BYTE;
+            strcpy_s(searchType, MAX_CHAR, "eight byte");
             break;
     }
 }
 
 void showMatchMenu(MEMBLOCK **scan, char *userInput, VALUE_TYPE *valueType, double *val, SEARCH_CONDITION *cond, DWORD *pid, MENU *uiMenu) {
-    printf("=== %d matches found ===\n", getMatchesCount(*scan));
+    printf("=== %zu matches found ===\n", getMatchesCount(*scan));
     printf("[a] - print matches\n");
     printf("[b] - increased value\n");
     printf("[c] - decreased value\n");
@@ -93,11 +88,11 @@ void showMatchMenu(MEMBLOCK **scan, char *userInput, VALUE_TYPE *valueType, doub
 void showWriteMenu(double *val, MEMBLOCK *scan, LPVOID addrToWrite, char *userInput, char *searchType, VALUE_TYPE *valueType, MENU *uiMenu) {
     showValueTypeMenu(userInput, searchType, valueType);
     printf("Enter the adress to write: ");
-    scanf("%x", addrToWrite);
+    scanf_s("%p", &addrToWrite);
     clearStringBuffer();
-    printf("== writing a %s to 0x%x ==\n", searchType, addrToWrite);
+    printf("== writing a %s to 0x%p ==\n", searchType, addrToWrite);
     printf("Value: ");
-    scanf("%lf", val);
+    scanf_s("%lf", val);
     clearStringBuffer();
     write(scan->hProc, *valueType, addrToWrite, *val);
     *uiMenu = MAIN_MENU;

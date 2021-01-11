@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     char searchType[10];
     SEARCH_CONDITION cond;
     MENU ui = MAIN_MENU;
-    LPVOID addrToWrite;
+    LPVOID addrToWrite = 0;
 
     enterPid(&scan, &pid);
 

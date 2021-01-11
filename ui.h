@@ -3,6 +3,8 @@
 #include "scanner.h"
 #include "utils.h"
 
+#define MAX_CHAR 15
+
 void showValueTypeMenu(char *userInput, char *searchType, VALUE_TYPE *valueType);
 
 void showMatchMenu(MEMBLOCK **scan, char *userInput, VALUE_TYPE *valueType, double *val, SEARCH_CONDITION *cond, DWORD *pid, MENU *uiMenu);
